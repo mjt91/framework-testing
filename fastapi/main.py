@@ -1,5 +1,9 @@
 """Simple FastApi Forecasting App."""
-from fastapi import FastAPI
+
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+
 from pydantic import BaseModel
 import pandas as pd
 
@@ -8,6 +12,9 @@ from statsforecast import StatsForecast
 
 # Init FastApi
 app = FastAPI()
+
+# Access templates
+templates = Jinja2Templates(directory="templates")
 
 dataf = pd.read_parquet("data/AirPassengers.parquet")
 
@@ -21,19 +28,19 @@ class ForecastRequest(BaseModel):
 @app.post("/forecast/")
 async def forecast(request: ForecastRequest):
     # Use StatsForecast with AutoARIMA model
-    model = StatsForecast(models=[AutoARIMA()], freq='MS')
+    model = StatsForecast(models=[AutoARIMA()], freq="MS")
 
     # Fit the model on the AirPassengers data
     model.fit(dataf)
 
     # Generate forecast for the specified number of periods
     forecast_df = model.predict(h=request.periods)
-    
+
     # Return forecast as JSON
     return forecast_df.to_dict(orient="records")
 
 
 # Root endpoint
-@app.get("/")
-async def home():
-    return {"message": "Welcome to the AirPassengers Forecast API!"}
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
