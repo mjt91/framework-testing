@@ -1,0 +1,12 @@
+[project]
+name = "fastapi-html"
+version = "0.1.0"
+description = "Simple Forecasting App using FastApi and basic html templating"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "pandas>=2.2.3",
+    "statsforecast>=1.7.8",
+    "uvicorn>=0.30.6",
+]
