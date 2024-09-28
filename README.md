@@ -9,6 +9,6 @@ Idea is to create different time series forecasting applications.
 ## FastApi + Html templating
 
 ```console
-cd fastapi-html
-uv run main:app --reload
+cd fastapi
+uv run uvicorn main:app --reload
 ```
