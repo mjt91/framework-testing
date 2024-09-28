@@ -41,7 +41,9 @@ async def forecast(request: ForecastRequest):
     forecast_df = model.predict(h=request.periods)
 
     # Convert the forecast dates and values into JSON-friendly format
-    forecast_df['ds'] = forecast_df['ds'].dt.strftime('%Y-%m-%d')  # Convert to string for frontend
+    forecast_df["ds"] = forecast_df["ds"].dt.strftime(
+        "%Y-%m-%d"
+    )  # Convert to string for frontend
 
     # Return forecast as JSON
     return forecast_df.to_dict(orient="records")
