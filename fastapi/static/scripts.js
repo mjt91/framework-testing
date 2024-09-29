@@ -1,5 +1,24 @@
 let chart;  // Declare chart variable globally
+let historicalDates = [];
+let historicalValues = [];
 
+// Fetch historical data and store it in the global variables
+async function fetchHistoricalData() {
+    const response = await fetch('/historical_data/');
+    const data = await response.json();  // No need for JSON.parse(), response.json() automatically parses it
+
+    // Extract the dates and values from the historical data
+    historicalDates = data.map(item => new Date(item.ds));  // Convert dates to Date objects
+    historicalValues = data.map(item => item.y);  // Extract passenger values
+}
+
+// Fetch historical data on page load
+window.addEventListener('load', async () => {
+    await fetchHistoricalData();  // Ensure historical data is fetched before using it
+});
+
+
+// Function to fetch the forecast data from the backend
 async function getForecast() {
     const periods = document.getElementById("periods").value;
 
@@ -15,15 +34,15 @@ async function getForecast() {
     const forecastData = await response.json();
 
     // Extract dates and forecasted values from the forecastData
-    const forecastValues = forecastData.map(item => item.AutoARIMA);
     const forecastDates = forecastData.map(item => new Date(item.ds));  // Convert to Date objects
+    const forecastValues = forecastData.map(item => item.AutoARIMA);
 
-    // Update the chart with forecast data
-    updateChart(forecastDates, forecastValues);
+    // Update the chart with both historical and forecast data
+    updateChart(historicalDates, historicalValues, forecastDates, forecastValues);
 }
 
-// Function to update the chart with new data
-function updateChart(dates, values) {
+// Function to update the chart with both historical and forecast data
+function updateChart(historicalDates, historicalValues, forecastDates, forecastValues) {
     const ctx = document.getElementById('forecastChart').getContext('2d');
 
     if (chart) {
@@ -33,19 +52,29 @@ function updateChart(dates, values) {
     chart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: dates,  // x-axis will be the dates
-            datasets: [{
-                label: 'AirPassengers Forecast',
-                data: values,
-                borderColor: '#ff6384', // Line color
-                backgroundColor: '#ff6384', // Line fill color
-                fill: false,
-                borderWidth: 2,
-                pointRadius: 5,  // Add dots on the data points (size of the dots)
-                pointBackgroundColor: '#ff6384',  // Color of the dots
-                pointBorderColor: '#ff6384',  // Border color of the dots
-                pointHoverRadius: 7,  // Slightly larger dot on hover
-            }]
+            labels: historicalDates.concat(forecastDates),  // Combine historical and forecast dates for the x-axis
+            datasets: [
+                {
+                    label: 'Historical Data',
+                    data: historicalValues,
+                    borderColor: '#4bc0c0',  // Line color for historical data
+                    backgroundColor: '#4bc0c033',  // Line fill color for historical data (hex with transparency)
+                    fill: false,
+                    borderWidth: 2,
+                    pointRadius: 3,  // Dots on historical data points
+                    pointBackgroundColor: '#4bc0c0'
+                },
+                {
+                    label: 'Forecast Data',
+                    data: new Array(historicalValues.length).concat(forecastValues),  // Leave empty space for historical values
+                    borderColor: '#ff6384',  // Line color for forecast data
+                    backgroundColor: '#ff638433',  // Line fill color for forecast data (hex with transparency)
+                    fill: false,
+                    borderWidth: 2,
+                    pointRadius: 3,  // Dots on forecast data points
+                    pointBackgroundColor: '#ff6384'
+                }
+            ]
         },
         options: {
             scales: {
