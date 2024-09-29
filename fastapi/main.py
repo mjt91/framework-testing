@@ -49,7 +49,24 @@ async def forecast(request: ForecastRequest):
     return forecast_df.to_dict(orient="records")
 
 
+@app.get("/historical_data/")
+async def get_historical_data():
+    # Convert historical data to JSON format
+    historical_data = dataf.reset_index().to_dict(orient="records")
+    for item in historical_data:
+        item['ds'] = item['ds'].strftime('%Y-%m-%d')  # Ensure proper date format
+
+    return historical_data  # FastAPI automatically serializes the list to JSON
+
+
 # Root endpoint
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+
+    # Convert historical data to JSON format for use in the frontend
+    historical_data = dataf.reset_index().to_dict(orient="records")
+    for item in historical_data:
+        item['ds'] = item['ds'].strftime('%Y-%m-%d')  # Convert dates to string format
+
+
+    return templates.TemplateResponse("index.html", {"request": request, "historical_data": historical_data})
